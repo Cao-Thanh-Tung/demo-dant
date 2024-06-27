@@ -16,13 +16,13 @@ public class ShuffleFirstFitStrategy extends HeuristicStrategy implements IStrat
 
     @Override
     public Solution createSolution(AlgorithmInput input, AlgorithmConfig config) {
+        long startTime = System.currentTimeMillis();
         Vehicle[] vehicles = input.getVehicles();
         Order[] orders = input.getOrders();
         MinDistanceFitOrderAssignStrategy minDistanceFitOrderAssignStrategy = new MinDistanceFitOrderAssignStrategy();
         Solution solution = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
         IObjective[] objectives = config.getObjectives();
-        int numShuffle = config.getNumShuffle();
-        for(int i = 0; i < numShuffle; i++){
+        for (int i = 0; i < config.getNumShuffle(); i++) {
             shuffleOrderArray(orders);
             Solution solution1 = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
             solution = getBetterSolution(solution, solution1, objectives);

@@ -25,11 +25,12 @@ public class MinDistanceObjective implements IObjective{
 
     @Override
     public int compare(double current, double candidate) {
-        if(current == candidate) return 0;
-        else if (current < candidate) {
+        if (current < candidate) {
+            return 1;
+        }else if(current > candidate){
             return -1;
         }else{
-            return candidate < current ? 1 : 0;
+            return 0;
         }
     }
 }

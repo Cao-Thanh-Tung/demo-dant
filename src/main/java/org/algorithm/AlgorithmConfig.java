@@ -8,6 +8,14 @@ public class AlgorithmConfig {
     private IConstraint[] constraints;
     private IObjective[] objectives;
 
+    public int getNumShuffle() {
+        return numShuffle;
+    }
+
+    public void setNumShuffle(int numShuffle) {
+        this.numShuffle = numShuffle;
+    }
+
     public IConstraint[] getConstraints() {
         return constraints;
     }
@@ -22,13 +30,5 @@ public class AlgorithmConfig {
 
     public void setObjectives(IObjective[] objectives) {
         this.objectives = objectives;
-    }
-
-    public int getNumShuffle() {
-        return numShuffle;
-    }
-
-    public void setNumShuffle(int numShuffle) {
-        this.numShuffle = numShuffle;
     }
 }

@@ -2,6 +2,7 @@ package org.algorithm;
 
 public class Position {
     static long _id = 0;
+
     private long id;
     private double lat;
     private double lon;

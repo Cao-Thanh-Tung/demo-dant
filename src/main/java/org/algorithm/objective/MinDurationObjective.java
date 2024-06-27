@@ -23,11 +23,12 @@ public class MinDurationObjective implements IObjective{
 
     @Override
     public int compare(double current, double candidate) {
-        if (current == candidate) return 0;
-        else if (current < candidate) {
-            return -1;
-        }else {
+        if (current < candidate) {
             return 1;
+        }else if(current > candidate){
+            return -1;
+        }else{
+            return 0;
         }
     }
 }
