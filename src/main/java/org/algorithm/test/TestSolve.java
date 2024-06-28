@@ -23,7 +23,62 @@ import java.io.*;
 
 public class TestSolve {
     public static void main(String[] args) {
+        //testGreedyAlgorithms();
+        testHeuristicAlgorithmWith500shuffle();
+        testHeuristicAlgorithmWith1000shuffle();
+    }
 
+    private static void testGreedyAlgorithms(){
+        String csvFile = "greedyresult.csv";
+        String[] header = {"file_data", "strategy", "run_order", "vehicle_num", "order_num", "total_distance", "total_duration", "total_serve_able_order", "total_demand", "total_vehicle_used", "run_time"};
+        String[] folderNames = {"5_20", "10_50", "10_100", "20_100", "50_1000"};
+        IDistanceTimeMatrix distanceTimeMatrix = new DistanceTimeOsmMatrix();
+        IConstraint[] constraints = {
+                new TimeWindowConstraint(distanceTimeMatrix),
+                new CapacityConstraint()
+        };
+        IObjective[] objectives = {
+                new MaxServeAbleOrderObjective(),
+                new MinDistanceObjective(),
+                new MinDurationObjective()
+        };
+        IStrategy[] strategies = {
+                new FirstFitOrderAssignStrategy(),
+                new MinDistanceFitOrderAssignStrategy(),
+                new RoundRobinOrderAssignStrategy(),
+        };
+        AlgorithmConfig config = new AlgorithmConfig();
+        config.setConstraints(constraints);
+        config.setObjectives(objectives);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
+            writeLine(writer, header);
+            for (String fo : folderNames) {
+                for (IStrategy strategy : strategies){
+                        for (int i = 1; i <= 10; i++) {
+                            String fileName =fo + "_" + i + ".txt";
+                            for (int j = 1; j <= 20; j++) {
+                                AlgorithmInput input = getInputFromFile("dataset" + File.separator + fo + File.separator + fileName, distanceTimeMatrix);
+                                int vN = input.getVehicles().length;
+                                int oN = input.getOrders().length;
+                                System.out.println("Đang xử lý file: " + fileName + " với chiến lược: " + strategy.getName() + " lần chạy thứ: " + j + " số lượng xe: " + vN + " số lượng đơn hàng: " + oN);
+                                long startTime = System.currentTimeMillis();
+                                Solution solution = strategy.createSolution(input, config);
+                                long endTime = System.currentTimeMillis();
+                                long duration = endTime - startTime;
+                                writer.write(fileName +","+strategy.getName()+","+j+","+vN+","+oN+","+solution.totalDistance+","+solution.totalDuration+","+solution.totalServeAbleOrder+","+solution.totalDemand+","+solution.numVehicleUsed+","+duration);
+                                writer.newLine();
+                            }
+                        }
+                }
+            }
+            System.out.println("Đã tạo file CSV thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private static void testHeuristicAlgorithmWith500shuffle(){
         String csvFile = "result500.csv";
         String[] header = {"file_data", "strategy", "run_order", "vehicle_num", "order_num", "total_distance", "total_duration", "total_serve_able_order", "total_demand", "total_vehicle_used", "run_time"};
         String[] folderNames = {"5_20", "10_50", "10_100", "20_100", "50_1000"};
@@ -38,58 +93,76 @@ public class TestSolve {
                 new MinDurationObjective()
         };
         IStrategy[] strategies = {
-//                new FirstFitOrderAssignStrategy(),
-//                new MinDistanceFitOrderAssignStrategy(),
-//                new RoundRobinOrderAssignStrategy(),
                 new ShuffleRoundRobinStrategy(),
-//                new ShuffleFirstFitStrategy(),
-//                new ShuffleMinDistanceFitStrategy(),
+                new ShuffleFirstFitStrategy(),
+                new ShuffleMinDistanceFitStrategy(),
         };
         AlgorithmConfig config = new AlgorithmConfig();
         config.setConstraints(constraints);
         config.setObjectives(objectives);
-//        int[] nums = {500};
         int n = 500;
-//        AlgorithmInput input = getInputFromFile("dataset" + File.separator + "10_100" + File.separator + "10_100_1.txt", distanceTimeMatrix);
-//        Solution solution = (new FirstFitOrderAssignStrategy()).createSolution(input, config);
-//        System.out.println(solution.totalDistance);
-//        Solution solution1 = (new MinDistanceFitOrderAssignStrategy()).createSolution(input, config);
-//        System.out.println(solution1.totalDistance);
-//        solution.printSolution();
-//        solution1.printSolution();
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
             writeLine(writer, header);
             for (String fo : folderNames) {
                 for (IStrategy strategy : strategies){
-                    if (strategy instanceof HeuristicStrategy){
                         for (int i = 1; i <= 10; i++) {
                             String fileName =fo + "_" + i + ".txt";
-                                AlgorithmInput input = getInputFromFile("dataset" + File.separator + fo + File.separator + fileName, distanceTimeMatrix);
-                                config.setNumShuffle(n);
-                                System.out.println("Đang xử lý file: " + fileName + " với chiến lược: " + strategy.getName() + " số lượng xe: " + input.getVehicles().length + " số lượng đơn hàng: " + input.getOrders().length + "numShuffer: "+ n);
-                                long startTime = System.currentTimeMillis();
-                                Solution solution = strategy.createSolution(input, config);
-                                long endTime = System.currentTimeMillis();
-                                long duration = endTime - startTime;
-                                writer.write(fileName +","+strategy.getName()+","+1+","+input.getVehicles().length+","+input.getOrders().length+","+solution.totalDistance+","+solution.totalDuration+","+solution.totalServeAbleOrder+","+solution.totalDemand+","+solution.numVehicleUsed+","+duration);
-                                writer.newLine();
+                            AlgorithmInput input = getInputFromFile("dataset" + File.separator + fo + File.separator + fileName, distanceTimeMatrix);
+                            config.setNumShuffle(n);
+                            System.out.println("Đang xử lý file: " + fileName + " với chiến lược: " + strategy.getName() + " số lượng xe: " + input.getVehicles().length + " số lượng đơn hàng: " + input.getOrders().length + "numShuffer: "+ 500);
+                            long startTime = System.currentTimeMillis();
+                            Solution solution = strategy.createSolution(input, config);
+                            long endTime = System.currentTimeMillis();
+                            long duration = endTime - startTime;
+                            writer.write(fileName +","+strategy.getName()+","+1+","+input.getVehicles().length+","+input.getOrders().length+","+solution.totalDistance+","+solution.totalDuration+","+solution.totalServeAbleOrder+","+solution.totalDemand+","+solution.numVehicleUsed+","+duration);
+                            writer.newLine();
                         }
-                    }else{
-                        for (int i = 1; i <= 10; i++) {
-                            String fileName =fo + "_" + i + ".txt";
-                            for (int j = 1; j <= 20; j++) {
-                                AlgorithmInput input = getInputFromFile("dataset" + File.separator + fo + File.separator + fileName, distanceTimeMatrix);
-                                int vN = input.getVehicles().length;
-                                int oN = input.getOrders().length;
-                                System.out.println("Đang xử lý file: " + fileName + " với chiến lược: " + strategy.getName() + " lần chạy thứ: " + j + " số lượng xe: " + vN + " số lượng đơn hàng: " + oN);
-                                long startTime = System.currentTimeMillis();
-                                    Solution solution = strategy.createSolution(input, config);
-                                    long endTime = System.currentTimeMillis();
-                                    long duration = endTime - startTime;
-                                    writer.write(fileName +","+strategy.getName()+","+j+","+vN+","+oN+","+solution.totalDistance+","+solution.totalDuration+","+solution.totalServeAbleOrder+","+solution.totalDemand+","+solution.numVehicleUsed+","+duration);
-                                    writer.newLine();
-                            }
-                        }
+                }
+            }
+            System.out.println("Đã tạo file CSV thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void testHeuristicAlgorithmWith1000shuffle(){
+        String csvFile = "result1000.csv";
+        String[] header = {"file_data", "strategy", "run_order", "vehicle_num", "order_num", "total_distance", "total_duration", "total_serve_able_order", "total_demand", "total_vehicle_used", "run_time"};
+        String[] folderNames = {"5_20", "10_50", "10_100", "20_100", "50_1000"};
+        IDistanceTimeMatrix distanceTimeMatrix = new DistanceTimeOsmMatrix();
+        IConstraint[] constraints = {
+                new TimeWindowConstraint(distanceTimeMatrix),
+                new CapacityConstraint()
+        };
+        IObjective[] objectives = {
+                new MaxServeAbleOrderObjective(),
+                new MinDistanceObjective(),
+                new MinDurationObjective()
+        };
+        IStrategy[] strategies = {
+                new ShuffleRoundRobinStrategy(),
+                new ShuffleFirstFitStrategy(),
+                new ShuffleMinDistanceFitStrategy(),
+        };
+        AlgorithmConfig config = new AlgorithmConfig();
+        config.setConstraints(constraints);
+        config.setObjectives(objectives);
+        int n = 1000;
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
+            writeLine(writer, header);
+            for (String fo : folderNames) {
+                for (IStrategy strategy : strategies){
+                    for (int i = 1; i <= 10; i++) {
+                        String fileName =fo + "_" + i + ".txt";
+                        AlgorithmInput input = getInputFromFile("dataset" + File.separator + fo + File.separator + fileName, distanceTimeMatrix);
+                        config.setNumShuffle(n);
+                        System.out.println("Đang xử lý file: " + fileName + " với chiến lược: " + strategy.getName() + " số lượng xe: " + input.getVehicles().length + " số lượng đơn hàng: " + input.getOrders().length + "numShuffer: "+ 1000);
+                        long startTime = System.currentTimeMillis();
+                        Solution solution = strategy.createSolution(input, config);
+                        long endTime = System.currentTimeMillis();
+                        long duration = endTime - startTime;
+                        writer.write(fileName +","+strategy.getName()+","+1+","+input.getVehicles().length+","+input.getOrders().length+","+solution.totalDistance+","+solution.totalDuration+","+solution.totalServeAbleOrder+","+solution.totalDemand+","+solution.numVehicleUsed+","+duration);
+                        writer.newLine();
                     }
                 }
             }
@@ -97,21 +170,8 @@ public class TestSolve {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-//        IDistanceTimeMatrix distanceTimeMatrix = new DistanceTimeOsmMatrix();
-//        AlgorithmInput input = getInputFromFile("dataset" + File.separator + "5_20" + File.separator + "5_20_1.txt", distanceTimeMatrix);
-//        AlgorithmConfig config = new AlgorithmConfig();
-//        IConstraint[] constraints = {
-//                new TimeWindowConstraint(distanceTimeMatrix),
-//                new CapacityConstraint()
-//        };
-//        config.setConstraints(constraints);
-//        IStrategy strategy = new ChooseOrderFirstStrategy();
-//        Solution solution = strategy.createSolution(input, config);
-
-//        solution.printSolution();
     }
+
 
     private static void writeLine(BufferedWriter writer, String[] values) throws IOException {
         writer.write(String.join(",", values));

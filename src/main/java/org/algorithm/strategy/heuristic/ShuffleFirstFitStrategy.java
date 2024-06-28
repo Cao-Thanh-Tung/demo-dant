@@ -19,12 +19,13 @@ public class ShuffleFirstFitStrategy extends HeuristicStrategy implements IStrat
         long startTime = System.currentTimeMillis();
         Vehicle[] vehicles = input.getVehicles();
         Order[] orders = input.getOrders();
-        MinDistanceFitOrderAssignStrategy minDistanceFitOrderAssignStrategy = new MinDistanceFitOrderAssignStrategy();
-        Solution solution = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
+        FirstFitOrderAssignStrategy firstFitOrderAssignStrategy = new FirstFitOrderAssignStrategy();
+        Solution solution = firstFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
         IObjective[] objectives = config.getObjectives();
-        for (int i = 0; i < config.getNumShuffle(); i++) {
+        for (int i = 1; i < config.getNumShuffle(); i++) {
             shuffleOrderArray(orders);
-            Solution solution1 = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
+            shuffleVehicleArray(vehicles);
+            Solution solution1 = firstFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
             solution = getBetterSolution(solution, solution1, objectives);
         }
         return solution;
@@ -34,6 +35,16 @@ public class ShuffleFirstFitStrategy extends HeuristicStrategy implements IStrat
         for (int i = array.length - 1; i > 0; i--) {
             int index = rnd.nextInt(i + 1);
             Order a = array[index];
+            array[index] = array[i];
+            array[i] = a;
+        }
+    }
+
+    private void shuffleVehicleArray(Vehicle[] array) {
+        Random rnd = new Random();
+        for (int i = array.length - 1; i > 0; i--) {
+            int index = rnd.nextInt(i + 1);
+            Vehicle a = array[index];
             array[index] = array[i];
             array[i] = a;
         }

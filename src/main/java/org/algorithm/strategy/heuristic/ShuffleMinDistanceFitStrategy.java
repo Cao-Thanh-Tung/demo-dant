@@ -3,6 +3,7 @@ package org.algorithm.strategy.heuristic;
 import org.algorithm.*;
 import org.algorithm.objective.IObjective;
 import org.algorithm.strategy.IStrategy;
+import org.algorithm.strategy.greedy.MinDistanceFitOrderAssignStrategy;
 import org.algorithm.strategy.greedy.RoundRobinOrderAssignStrategy;
 
 import java.util.Random;
@@ -18,13 +19,13 @@ public class ShuffleMinDistanceFitStrategy extends HeuristicStrategy implements 
         long startTime = System.currentTimeMillis();
         Vehicle[]vehicles  = input.getVehicles();
         Order[] orders = input.getOrders();
-        RoundRobinOrderAssignStrategy roundRobinOrderAssignStrategy = new RoundRobinOrderAssignStrategy();
-        Solution solution = roundRobinOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
+        MinDistanceFitOrderAssignStrategy minDistanceFitOrderAssignStrategy = new MinDistanceFitOrderAssignStrategy();
+        Solution solution = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
         IObjective[] objectives = config.getObjectives();
-        for (int i = 0; i < config.getNumShuffle(); i++) {
+        for (int i = 1; i < config.getNumShuffle(); i++) {
             shuffleOrderArray(orders);
             shuffleVehicleArray(vehicles);
-            Solution solution1 = roundRobinOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
+            Solution solution1 = minDistanceFitOrderAssignStrategy.createSolution(new AlgorithmInput(vehicles, orders, input.getDistanceTimeMatrix()), config);
             solution = getBetterSolution(solution, solution1, objectives);
         }
         return solution;
